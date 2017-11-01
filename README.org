@@ -1,4 +1,5 @@
 * SHITPOSTER9000
 
-bad bots doin bad stuff
+Fill out config.pl with your shit, run shitposter9000.pl. Deploy in screen for best results.
+
 
