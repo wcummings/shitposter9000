@@ -14,6 +14,7 @@ use base qw(Bot::BasicBot);
 
 my $giphy_search_endpoint = "http://api.giphy.com/v1/gifs/search?api_key=%s&q=%s";
 my $cats_dir = "https://wpc.io/cats/";
+my $pigs_dir = "https://wpc.io/pigs/";
 
 my $twitter = Net::Twitter->new(
     traits   => [qw/API::RESTv1_1/],
@@ -47,22 +48,43 @@ sub said {
 
 sub cmd_pig {
     my ($self, $arguments) = @_;
-    $self->cmd_gif($arguments, "pig");
+    if (rand() > 0.5) {
+	$self->cmd_gif($arguments, "pig");
+    } else {
+	$pig = choose_file_from_index($pigs_dir, "mp4");
+	if ($pig) {
+	    $self->say(channel => $arguments->{channel},
+		       body    => $pig);
+	} else {
+	    $self->say(channel => $arguments->{channel},
+		       body    => "Error getting pigs.");
+	}
+    }
+}
+
+sub cmd_sexy {
+    my ($self, $arguments) = @_;
+}
+
+sub choose_file_from_index {
+    my ($url, $suffix) = @_;
+    my $response = $ua->get($url);
+    if ($response->is_success) {
+	my @files;
+	my $content = $response->decoded_content;
+	while ($content =~ /\"(.*?\.$suffix)\"/g) {
+	    push @files, $1;
+	}
+	$url . choice(\@files);
+    }
 }
 
 sub cmd_cat {
     my ($self, $arguments) = @_;
-    my $response = $ua->get($cats_dir);
-    if ($response->is_success) {
-	my @gifs;
-	my $content = $response->decoded_content;
-	while ($content =~ /\"(.*?\.gif)\"/g) {
-	    push @gifs, $1;
-	}
-	my $gif = choice(\@gifs);
-	my $gif_url = $cats_dir . $gif;
+    my $gif = choose_file_from_index($cats_dir, "gif");
+    if ($gif) {
 	$self->say(channel => $arguments->{channel},
-		   body    => $gif_url);
+		   body    => $gif);
     } else {
 	$self->say(channel => $arguments->{channel},
 		   body    => "Error getting cats.");
